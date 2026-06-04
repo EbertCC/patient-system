@@ -1,4 +1,4 @@
-package dev.selenium.getting_started;
+package com.example.patient_system.e2e;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
