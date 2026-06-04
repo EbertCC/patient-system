@@ -15,13 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Tests de AppointmentRepository.
- *
- * El objetivo principal es verificar la @Query JPQL custom
- * (findByDoctorIdAndAppointmentTimeBetween), que NO se puede
- * comprobar con Mockito porque Mockito no ejecuta SQL real.
- */
+
 @DataJpaTest
 @DisplayName("AppointmentRepository — pruebas de queries")
 class AppointmentRepositoryTest {
@@ -34,7 +28,7 @@ class AppointmentRepositoryTest {
 
     private Patient patient;
     private Doctor doctor;
-    private LocalDateTime base; // tiempo base para los tests
+    private LocalDateTime base; 
 
     @BeforeEach
     void setUp() {
@@ -51,7 +45,6 @@ class AppointmentRepositoryTest {
 
         base = LocalDateTime.of(2026, 6, 15, 10, 0);
 
-        // Cita existente en el tiempo base
         Appointment existing = new Appointment();
         existing.setPatient(patient);
         existing.setDoctor(doctor);
@@ -72,7 +65,6 @@ class AppointmentRepositoryTest {
     @Test
     @DisplayName("findByPatientId — debe retornar lista vacía si el paciente no tiene citas")
     void findByPatientId_WhenNoAppointments_ShouldReturnEmpty() {
-        // Crear otro paciente sin citas
         Patient other = new Patient();
         other.setName("Sin Citas");
         other.setEmail("sincitas@example.com");
@@ -87,7 +79,6 @@ class AppointmentRepositoryTest {
     @Test
     @DisplayName("findByDoctorIdAndAppointmentTimeBetween — debe detectar conflicto en la ventana de 30 min")
     void findByDoctorIdAndAppointmentTimeBetween_WhenConflict_ShouldReturnAppointments() {
-        // Buscar citas dentro de ±30 minutos del tiempo base → debe encontrar la cita existente
         List<Appointment> conflicts = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
                 doctor.getId(),
                 base.minusMinutes(30),
@@ -100,7 +91,6 @@ class AppointmentRepositoryTest {
     @Test
     @DisplayName("findByDoctorIdAndAppointmentTimeBetween — no debe retornar citas fuera de la ventana")
     void findByDoctorIdAndAppointmentTimeBetween_WhenNoConflict_ShouldReturnEmpty() {
-        // Buscar 2 horas después — sin solapamiento
         LocalDateTime otherTime = base.plusHours(2);
 
         List<Appointment> conflicts = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(

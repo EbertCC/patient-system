@@ -14,17 +14,9 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Test de integración: verifica que el flujo completo
- * Service → Repository → H2 funciona de extremo a extremo.
- *
- * @SpringBootTest levanta el contexto completo de Spring.
- * La BD usada es H2 (definida en src/test/resources/application.properties).
- *
- * Se limpia la BD antes/después de cada test para garantizar aislamiento.
- */
+
 @SpringBootTest
-@ActiveProfiles("test") // Activa el perfil test si tuvieras application-test.properties adicional
+@ActiveProfiles("test") 
 @DisplayName("PatientService — pruebas de integración con H2")
 class PatientIntegrationTest {
 
@@ -56,7 +48,7 @@ class PatientIntegrationTest {
         Patient saved = patientService.registerPatient(input);
 
         assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getPassword()).doesNotContain("password123"); // Debe estar cifrada
+        assertThat(saved.getPassword()).doesNotContain("password123"); 
 
         Patient found = patientService.findByEmail("laura@example.com");
         assertThat(found).isNotNull();
@@ -74,7 +66,7 @@ class PatientIntegrationTest {
 
         Patient duplicate = new Patient();
         duplicate.setName("Pedro Copia");
-        duplicate.setEmail("PEDRO@EXAMPLE.COM"); // mismo email, distinto case
+        duplicate.setEmail("PEDRO@EXAMPLE.COM"); 
         duplicate.setPassword("pass2");
 
         assertThatThrownBy(() -> patientService.registerPatient(duplicate))
