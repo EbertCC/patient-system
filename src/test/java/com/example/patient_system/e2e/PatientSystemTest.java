@@ -43,8 +43,7 @@ public class PatientSystemTest {
 
         driver.findElement(By.cssSelector("button[type='submit']")).click();
 
-        assertTrue(driver.getCurrentUrl().contains("login") || 
-                   driver.getCurrentUrl().contains("8085"));
+        assertTrue(driver.getCurrentUrl().contains("login") || driver.getCurrentUrl().contains("8085"));
     }
 
     @Test
