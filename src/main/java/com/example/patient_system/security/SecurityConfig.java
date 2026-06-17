@@ -22,6 +22,10 @@ public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
+    // Extract Constant: evita duplicar literales de string (Sonar S1192)
+    private static final String LOGIN_URL = "/login";
+    private static final String LOGOUT_URL = "/logout";
+
     @Autowired
     private PatientRepository patientRepository;
 
@@ -40,7 +44,6 @@ public class SecurityConfig {
                 logger.warn("User not found: {}", normalizedUsername);
                 throw new UsernameNotFoundException("User not found: " + normalizedUsername);
             }
-            logger.debug("User found: {}, password: {}", user.getEmail(), user.getPassword());
             return new org.springframework.security.core.userdetails.User(
                     user.getEmail(), user.getPassword(), AuthorityUtils.createAuthorityList("ROLE_USER"));
         };
@@ -51,30 +54,29 @@ public class SecurityConfig {
         logger.info("Configuring Spring Security filter chain");
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/logout")
+                        .ignoringRequestMatchers(LOGOUT_URL)
                 )
-                
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/index", "/register", "/login", "/css/**", "/js/**", "/webjars/**").permitAll()
+                        .requestMatchers("/", "/index", "/register", LOGIN_URL, "/css/**", "/js/**", "/webjars/**").permitAll()
                         .requestMatchers("/appointments", "/appointments/book", "/medications", "/medications/add", "/medications/delete/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
+                        .loginPage(LOGIN_URL)
+                        .loginProcessingUrl(LOGIN_URL)
                         .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true")
+                        .failureUrl(LOGIN_URL + "?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutUrl(LOGOUT_URL)
+                        .logoutSuccessUrl(LOGIN_URL + "?logout=true")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
                 .exceptionHandling(exceptions -> exceptions
-                        .accessDeniedPage("/login")
+                        .accessDeniedPage(LOGIN_URL)
                 );
 
         return http.build();
