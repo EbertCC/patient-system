@@ -1,6 +1,8 @@
 package com.example.patient_system.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
 @Entity
@@ -20,6 +22,11 @@ public class Patient {
     @Column(nullable = false)
     private String password;
 
+    @NotBlank(message = "El teléfono es obligatorio")
+    @Pattern(
+        regexp = "\\+?[0-9]{7,15}",
+        message = "El teléfono debe contener solo dígitos (7-15), opcionalmente con + al inicio"
+    )
     private String phone;
 
     @Column(columnDefinition = "TEXT")
@@ -48,6 +55,4 @@ public class Patient {
     public void setAppointments(List<Appointment> appointments) { this.appointments = appointments; }
     public List<Medication> getMedications() { return medications; }
     public void setMedications(List<Medication> medications) { this.medications = medications; }
-
-
 }

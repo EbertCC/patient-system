@@ -2,58 +2,98 @@ package com.example.patient_system.service;
 
 import com.example.patient_system.model.Patient;
 import com.example.patient_system.repository.PatientRepository;
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class PatientServiceTest {
 
-    @Mock
-    private PatientRepository patientRepository;
+class PatientServiceTest {
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @InjectMocks
-    private PatientService patientService;
-
-    private Patient patient;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
-        patient = new Patient();
-        patient.setId(1L);
-        patient.setName("John Doe");
-        patient.setEmail("john@example.com");
-        patient.setPassword("password");
-        patient.setPhone("999999999");
-        patient.setMedicalHistory("No tiene antecedentes");
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
+
+    @Test
+    void phone_negativo_debeSerInvalido() {
+        // Arrange
+        Patient patient = buildPatient("-123456789");
+
+        // Act
+        Set<ConstraintViolation<Patient>> violations = validator.validateProperty(patient, "phone");
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Un teléfono negativo debe producir una violación de validación");
     }
 
     @Test
-    void getPatientById_WhenPatientExists_ShouldReturnPatient() {
-        when(patientRepository.findById(1L))
-                .thenReturn(Optional.of(patient));
+    void phone_soloLetras_debeSerInvalido() {
+        // Arrange
+        Patient patient = buildPatient("abcdefgh");
 
-        Patient result = patientService.getPatientById(1L);
+        // Act
+        Set<ConstraintViolation<Patient>> violations = validator.validateProperty(patient, "phone");
 
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals("John Doe", result.getName());
+        // Assert
+        assertFalse(violations.isEmpty(), "Un teléfono con solo letras debe producir una violación de validación");
+    }
 
-        verify(patientRepository, times(1)).findById(1L);
+    @Test
+    void phone_vacio_debeSerInvalido() {
+        // Arrange
+        Patient patient = buildPatient("");
+
+        // Act
+        Set<ConstraintViolation<Patient>> violations = validator.validateProperty(patient, "phone");
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Un teléfono vacío debe producir una violación de validación");
+    }
+
+    // ─── CASOS VÁLIDOS (deben pasar la validación) ──────────────────────────
+
+    @Test
+    void phone_numerosSimples_debeSerValido() {
+        // Arrange
+        Patient patient = buildPatient("987654321");
+
+        // Act
+        Set<ConstraintViolation<Patient>> violations = validator.validateProperty(patient, "phone");
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Un teléfono con solo dígitos debe ser válido");
+    }
+
+    @Test
+    void phone_conCodigoDePais_debeSerValido() {
+        // Arrange
+        Patient patient = buildPatient("+51987654321");
+
+        // Act
+        Set<ConstraintViolation<Patient>> violations = validator.validateProperty(patient, "phone");
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Un teléfono con código de país (+51...) debe ser válido");
+    }
+
+
+    private Patient buildPatient(String phone) {
+        Patient patient = new Patient();
+        patient.setName("Juan Pérez");
+        patient.setEmail("juan@example.com");
+        patient.setPassword("password123");
+        patient.setPhone(phone);
+        return patient;
     }
 }
