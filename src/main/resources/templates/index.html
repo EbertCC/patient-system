@@ -85,7 +85,8 @@
     <a href="/appointments" class="list-group-item list-group-item-action">Book New Appointment</a>
     <a href="/medications" class="list-group-item list-group-item-action">View Medications</a>
     <form th:action="@{/logout}" method="post" class="list-group-item">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> 
+      
       <button type="submit" class="btn btn-link text-decoration-none p-0">Logout</button>
     </form>
   </div>

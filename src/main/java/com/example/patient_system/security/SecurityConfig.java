@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/logout")
                 )
+                
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/", "/index", "/register", "/login", "/css/**", "/js/**", "/webjars/**").permitAll()
                         .requestMatchers("/appointments", "/appointments/book", "/medications", "/medications/add", "/medications/delete/**").authenticated()

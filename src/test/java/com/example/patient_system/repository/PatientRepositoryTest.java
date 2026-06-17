@@ -12,20 +12,13 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Tests de repositorio con @DataJpaTest.
- *
- * - Levanta SÓLO la capa JPA (sin web, sin servicios, sin seguridad).
- * - Usa H2 en memoria — no necesita MySQL.
- * - Cada test corre en una transacción que se hace rollback al terminar,
- *   así los datos no se contaminan entre tests.
- */
+
 @DataJpaTest
 @DisplayName("PatientRepository — pruebas de acceso a datos")
 class PatientRepositoryTest {
 
     @Autowired
-    private TestEntityManager entityManager; // Permite insertar datos de prueba directamente
+    private TestEntityManager entityManager; 
 
     @Autowired
     private PatientRepository patientRepository;
@@ -39,7 +32,6 @@ class PatientRepositoryTest {
         patient.setEmail("ana@example.com");
         patient.setPassword("hashed_password");
         patient.setPhone("987654321");
-        // Persiste y fuerza flush para que el ID quede asignado antes del test
         entityManager.persistAndFlush(patient);
     }
 

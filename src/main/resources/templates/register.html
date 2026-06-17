@@ -9,8 +9,9 @@
 <div class="container mt-4">
   <h2>Patient Registration</h2>
   <form th:action="@{/register}" th:object="${patient}" method="post" class="needs-validation" novalidate>
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <div class="mb-3">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> 
+    
+     <div class="mb-3">
       <label for="name" class="form-label">Full Name</label>
       <input type="text" class="form-control" id="name" th:field="*{name}" required>
       <div class="invalid-feedback">Please enter your name.</div>
