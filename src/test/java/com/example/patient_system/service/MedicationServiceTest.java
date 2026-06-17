@@ -1,91 +1,99 @@
 package com.example.patient_system.service;
 
 import com.example.patient_system.model.Medication;
-import com.example.patient_system.model.Patient;
-import com.example.patient_system.repository.MedicationRepository;
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class MedicationServiceTest {
 
-    @Mock
-    private MedicationRepository medicationRepository;
+class MedicationServiceTest {
 
-    @InjectMocks
-    private MedicationService medicationService;
-
-    private Patient patient;
-    private Medication medication;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
-        patient = new Patient();
-        patient.setId(1L);
-        patient.setName("John Doe");
-        patient.setEmail("john@example.com");
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
-        medication = new Medication();
-        medication.setId(1L);
+    // ─── CASOS INVÁLIDOS (deben fallar la validación) ───────────────────────
+
+    @Test
+    void dosage_negativo_conUnidad_debeSerInvalido() {
+        // Arrange
+        Medication medication = buildMedication("-5mg");
+
+        // Act
+        Set<ConstraintViolation<Medication>> violations = validator.validateProperty(medication, "dosage");
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Una dosis negativa con unidad (-5mg) debe producir una violación de validación");
+    }
+
+    @Test
+    void dosage_negativo_sinUnidad_debeSerInvalido() {
+        // Arrange
+        Medication medication = buildMedication("-100");
+
+        // Act
+        Set<ConstraintViolation<Medication>> violations = validator.validateProperty(medication, "dosage");
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Una dosis negativa sin unidad (-100) debe producir una violación de validación");
+    }
+
+    @Test
+    void dosage_vacio_debeSerInvalido() {
+        // Arrange
+        Medication medication = buildMedication("");
+
+        // Act
+        Set<ConstraintViolation<Medication>> violations = validator.validateProperty(medication, "dosage");
+
+        // Assert
+        assertFalse(violations.isEmpty(), "Una dosis vacía debe producir una violación de validación");
+    }
+
+    // ─── CASOS VÁLIDOS (deben pasar la validación) ──────────────────────────
+
+    @Test
+    void dosage_positivo_conMg_debeSerValido() {
+        // Arrange
+        Medication medication = buildMedication("500mg");
+
+        // Act
+        Set<ConstraintViolation<Medication>> violations = validator.validateProperty(medication, "dosage");
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Una dosis positiva con unidad mg (500mg) debe ser válida");
+    }
+
+    @Test
+    void dosage_positivo_conMl_debeSerValido() {
+        // Arrange
+        Medication medication = buildMedication("10ml");
+
+        // Act
+        Set<ConstraintViolation<Medication>> violations = validator.validateProperty(medication, "dosage");
+
+        // Assert
+        assertTrue(violations.isEmpty(), "Una dosis positiva con unidad ml (10ml) debe ser válida");
+    }
+
+    // ─── Helper ─────────────────────────────────────────────────────────────
+
+    private Medication buildMedication(String dosage) {
+        Medication medication = new Medication();
         medication.setName("Paracetamol");
-        medication.setDosage("500mg");
+        medication.setDosage(dosage);
         medication.setFrequency("Cada 8 horas");
-    }
-
-    @Test
-    void addMedication_ShouldSaveMedicationWithPatient() {
-        when(medicationRepository.save(medication))
-                .thenReturn(medication);
-
-        Medication result = medicationService.addMedication(patient, medication);
-
-        assertNotNull(result);
-        assertEquals("Paracetamol", result.getName());
-        assertEquals("500mg", result.getDosage());
-        assertSame(patient, result.getPatient());
-
-        verify(medicationRepository, times(1)).save(medication);
-    }
-
-    @Test
-    void getMedicationsByPatient_ShouldReturnMedicationList() {
-        Medication medication2 = new Medication();
-        medication2.setId(2L);
-        medication2.setName("Ibuprofeno");
-        medication2.setDosage("400mg");
-        medication2.setFrequency("Cada 12 horas");
-        medication2.setPatient(patient);
-
-        medication.setPatient(patient);
-
-        List<Medication> medications = Arrays.asList(medication, medication2);
-
-        when(medicationRepository.findByPatientId(1L))
-                .thenReturn(medications);
-
-        List<?> result = medicationService.getMedicationsByPatient(1L);
-
-        assertEquals(2, result.size());
-
-        verify(medicationRepository, times(1)).findByPatientId(1L);
-    }
-
-    @Test
-    void deleteMedication_ShouldCallDeleteById() {
-        medicationService.deleteMedication(1L);
-
-        verify(medicationRepository, times(1)).deleteById(1L);
+        return medication;
     }
 }

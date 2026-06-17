@@ -1,6 +1,8 @@
 package com.example.patient_system.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "medications")
@@ -17,6 +19,11 @@ public class Medication {
     @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "La dosis es obligatoria")
+    @Pattern(
+        regexp = "[0-9]+(\\.[0-9]+)?\\s?(mg|ml|g|mcg|units?)",
+        message = "La dosis debe ser un número positivo seguido de unidad (mg, ml, g, mcg, unit)"
+    )
     private String dosage;
 
     private String frequency;
