@@ -52,7 +52,7 @@ pipeline {
                 echo '== b. Análisis estático con SonarQube =='
                 // Requiere el SonarScanner disponible en el PATH,
                 // o configurado en Manage Jenkins > Tools.
-                bat "mvn -B sonar:sonar -Dsonar.host.url=${SONAR_HOST}"
+                bat "mvn -B sonar:sonar -Dsonar.host.url=${SONAR_HOST} -Dsonar.token=squ_254e216bd6d1069258b273084d73e88ab4b731bd"
             }
         }
 
