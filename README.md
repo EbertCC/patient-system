@@ -182,13 +182,30 @@ flowchart TD
 
 Estructura real de carpetas:
 
-```
-src/main/java/com/example/patient_system/
-├── shared/         (PatientId, Email, GlobalExceptionHandler)
-├── identity/       presentation · application · domain · infrastructure(security)
-├── patient/        presentation · application · domain · infrastructure
-├── scheduling/     presentation · application · domain(service) · infrastructure
-└── medication/     presentation · application · domain · infrastructure
+```text
+src/main/java/com/example/patient_system
+├── identity
+│   ├── presentation
+│   ├── application
+│   ├── domain
+│   └── infrastructure
+├── patient
+│   ├── presentation
+│   ├── application
+│   ├── domain
+│   └── infrastructure
+├── medication
+│   ├── presentation
+│   ├── application
+│   ├── domain
+│   └── infrastructure
+├── scheduling
+│   ├── presentation
+│   ├── application
+│   ├── domain
+│   └── infrastructure
+└── shared
+    └── domain
 ```
 
 ---
@@ -265,15 +282,16 @@ según lo que tu equipo haya configurado.]_
 | Análisis estático | SonarQube (Community 9.9) + SonarScanner | ✔ |
 | Pruebas unitarias | JUnit 5 (+ JaCoCo cobertura) | ✔ |
 | Pruebas funcionales | Postman / Newman (endpoints REST) | ✔ |
-| Pruebas de seguridad | OWASP Dependency-Check / ZAP | ⏳ |
-| Pruebas de performance | Apache JMeter / Gatling | ⏳ |
+| Pruebas de seguridad | OWASP Dependency-Check / ZAP | ✔ |
+| Pruebas de performance | Apache JMeter / Gatling | ✔ |
 | Gestión de issues | GitHub Issues + GitHub Projects | ✔ |
-| Gestión de entrega | Empaquetado JAR ejecutable (Spring Boot) | opcional |
 
 ### Detalle por etapa
 
 **Construcción automática.** `mvn clean package` compila los 4 módulos y genera un JAR
 autoejecutable con Tomcat embebido.
+
+y esto
 
 **Análisis estático.** SonarQube inspecciona code smells, bugs y vulnerabilities. En el
 laboratorio previo se corrigieron: código comentado muerto, literales duplicados en la
