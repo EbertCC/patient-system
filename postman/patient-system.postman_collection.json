@@ -1,0 +1,227 @@
+{
+  "info": {
+    "_postman_id": "493d57d7-55c6-44c5-97c4-a2857e85083e",
+    "name": "patient-system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56270226",
+    "_collection_link": "https://go.postman.co/collection/56270226-493d57d7-55c6-44c5-97c4-a2857e85083e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "registro",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Registro exitoso\", () => pm.response.to.have.status(200));\r",
+              "pm.test(\"No expone password\", () => pm.expect(pm.response.json().password).to.be.undefined);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_14s2}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"prueba_2@email.com\",\r\n    \"password\": \"secreto_123\",\r\n    \"name\": \"usuario_prueba_2\",\r\n    \"phone\": \"978978332\",\r\n    \"medicalHistory\": \"ninguno\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8085/api/patients/register",
+          "host": [
+            "localhost"
+          ],
+          "port": "8085",
+          "path": [
+            "api",
+            "patients",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Login exitoso\", () => pm.response.to.have.status(200));\r",
+              "pm.test(\"Devuelve token\", () => pm.expect(pm.response.json().token).to.exist);\r",
+              "\r",
+              "pm.collectionVariables.set(\"token\", json.token);\r",
+              "console.log(\"TOKEN GUARDADO:\", json.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"prueba_2@email.com\",\r\n    \"password\": \"secreto_123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8085/api/auth/login",
+          "host": [
+            "localhost"
+          ],
+          "port": "8085",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "agregar medicamento",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"patientId\": 2,\r\n  \"name\": \"Paracetamol\",\r\n  \"dosage\": \"500mg\",\r\n  \"frequency\": \"Cada 8 horas\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8085/api/medications",
+          "host": [
+            "localhost"
+          ],
+          "port": "8085",
+          "path": [
+            "api",
+            "medications"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "listar doctores",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "localhost:8085/api/doctors",
+          "host": [
+            "localhost"
+          ],
+          "port": "8085",
+          "path": [
+            "api",
+            "doctors"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "agregar cita",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"patientId\": 2,\r\n  \"doctorId\": 2,\r\n  \"appointmentTime\": \"2026-07-15T10:00:00\",\r\n  \"notes\": \"Control general\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "localhost:8085/api/appointments",
+          "host": [
+            "localhost"
+          ],
+          "port": "8085",
+          "path": [
+            "api",
+            "appointments"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "json_web_token_14s2",
+      "secret": true
+    }
+  ]
+}

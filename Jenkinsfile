@@ -59,11 +59,9 @@ pipeline {
         // d. PRUEBAS FUNCIONALES --------------------------------------
         stage('Functional Tests') {
             steps {
-                echo '== d. Pruebas funcionales (Postman/Newman o Selenium) =='
-                // Opción Postman con Newman (si exportas tu colección):
-                //   bat 'newman run postman/patient-system.postman_collection.json'
-                // Opción Selenium: los tests E2E de src/test (paquete e2e).
-                echo 'Ejecutar colección Postman/Newman o pruebas Selenium E2E.'
+                echo '== d. Pruebas funcionales con Newman =='
+                bat 'dir postman'
+                bat 'newman.cmd run "postman/patient-system.postman_collection.json"'
             }
         }
 
