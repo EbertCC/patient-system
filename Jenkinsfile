@@ -74,12 +74,18 @@ pipeline {
         stage('Performance Tests') {
             steps {
                 echo '== e. Pruebas de performance con JMeter =='
-                // Ejemplo (requiere JMeter instalado y un plan .jmx):
-                //   bat 'jmeter -n -t performance/plan.jmx -l results.jtl'
-                echo 'Ejecutar plan de pruebas JMeter (esqueleto).'
+
+                bat '''
+                if not exist target\\jmeter mkdir target\\jmeter
+
+                if exist target\\jmeter\\results.jtl del /f /q target\\jmeter\\results.jtl
+
+                if exist target\\jmeter\\report rmdir /s /q target\\jmeter\\report
+
+                "C:\\apache-jmeter-5.6.3\\bin\\jmeter.bat" -n -t "jmeter\\patient-system-performance.jmx" -l "target\\jmeter\\results.jtl" -e -o "target\\jmeter\\report"
+                '''
             }
         }
-
         // f. PRUEBAS DE SEGURIDAD -------------------------------------
         stage('Security Tests') {
             steps {
