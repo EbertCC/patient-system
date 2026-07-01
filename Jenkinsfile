@@ -90,11 +90,20 @@ pipeline {
         stage('Security Tests') {
             steps {
                 echo '== f. Pruebas de seguridad con OWASP ZAP =='
-                // Ejemplo (requiere ZAP en modo daemon apuntando a la app):
-                //   bat 'zap.bat -cmd -quickurl http://localhost:8085 -quickout zap-report.html'
-                echo 'Ejecutar escaneo OWASP ZAP contra http://localhost:8085 (esqueleto).'
+
+                bat '''
+                if not exist target\\zap mkdir target\\zap
+
+                if exist target\\zap\\zap-report.html del /f /q target\\zap\\zap-report.html
+
+                "C:\\Program Files\\ZAP\\Zed Attack Proxy\\zap.bat" -cmd -quickurl http://localhost:8085/api/doctors -quickout "target\\zap\\zap-report.html" -quickprogress
+
+                dir target\\zap
+
+                exit /b 0
+                '''
             }
-        }
+        }        
 
         // g. GESTIÓN DE ISSUES ----------------------------------------
         stage('Issue Management') {
