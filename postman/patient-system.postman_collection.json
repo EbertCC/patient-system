@@ -14,8 +14,40 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Registro exitoso\", () => pm.response.to.have.status(200));\r",
-              "pm.test(\"No expone password\", () => pm.expect(pm.response.json().password).to.be.undefined);"
+              "const json = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Registro exitoso\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"No expone password\", function () {\r",
+              "    pm.expect(pm.response.text()).to.not.include(\"password\");\r",
+              "});\r",
+              "\r",
+              "if (json.id) {\r",
+              "    pm.collectionVariables.set(\"patientId\", json.id);\r",
+              "}\r",
+              "\r",
+              "if (json.patientId) {\r",
+              "    pm.collectionVariables.set(\"patientId\", json.patientId);\r",
+              "}\r",
+              "\r",
+              "console.log(\"PATIENT ID:\", pm.collectionVariables.get(\"patientId\"));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const suffix = Date.now();\r",
+              "\r",
+              "pm.collectionVariables.set(\"email\", `prueba_${suffix}@email.com`);\r",
+              "pm.collectionVariables.set(\"password\", \"secreto_123\");\r",
+              "pm.collectionVariables.set(\"phone\", \"9\" + String(suffix).slice(-8));"
             ],
             "type": "text/javascript",
             "packages": {},
@@ -38,7 +70,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"email\": \"prueba_2@email.com\",\r\n    \"password\": \"secreto_123\",\r\n    \"name\": \"usuario_prueba_2\",\r\n    \"phone\": \"978978332\",\r\n    \"medicalHistory\": \"ninguno\"\r\n}",
+          "raw": "{\r\n  \"email\": \"{{email}}\",\r\n  \"password\": \"{{password}}\",\r\n  \"name\": \"usuario_prueba\",\r\n  \"phone\": \"{{phone}}\",\r\n  \"medicalHistory\": \"ninguno\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -69,10 +101,16 @@
             "exec": [
               "const json = pm.response.json();\r",
               "\r",
-              "pm.test(\"Login exitoso\", () => pm.response.to.have.status(200));\r",
-              "pm.test(\"Devuelve token\", () => pm.expect(pm.response.json().token).to.exist);\r",
+              "pm.test(\"Login exitoso\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Devuelve token\", function () {\r",
+              "    pm.expect(json.token).to.exist;\r",
+              "});\r",
               "\r",
               "pm.collectionVariables.set(\"token\", json.token);\r",
+              "\r",
               "console.log(\"TOKEN GUARDADO:\", json.token);"
             ],
             "type": "text/javascript",
@@ -86,7 +124,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"email\": \"prueba_2@email.com\",\r\n    \"password\": \"secreto_123\"\r\n}",
+          "raw": "{\r\n  \"email\": \"{{email}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -147,36 +185,51 @@
       "response": []
     },
     {
-      "name": "listar doctores",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "localhost:8085/api/doctors",
-          "host": [
-            "localhost"
-          ],
-          "port": "8085",
-          "path": [
-            "api",
-            "doctors"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "agregar cita",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const minutesToAdd = 7 * 24 * 60 + Math.floor(Math.random() * 10000);\r",
+              "const appointmentDate = new Date(Date.now() + minutesToAdd * 60 * 1000);\r",
+              "\r",
+              "pm.collectionVariables.set(\r",
+              "    \"appointmentTime\",\r",
+              "    appointmentDate.toISOString().slice(0, 19)\r",
+              ");\r",
+              "\r",
+              "console.log(\"APPOINTMENT TIME:\", pm.collectionVariables.get(\"appointmentTime\"));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Cita creada correctamente\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Estado SCHEDULED\", function () {\r",
+              "    pm.expect(json.status).to.eql(\"SCHEDULED\");\r",
+              "});\r",
+              "\r",
+              "pm.collectionVariables.set(\"appointmentId\", json.id);\r",
+              "\r",
+              "console.log(\"APPOINTMENT ID:\", pm.collectionVariables.get(\"appointmentId\"));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
@@ -192,7 +245,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"patientId\": 2,\r\n  \"doctorId\": 2,\r\n  \"appointmentTime\": \"2026-07-15T10:00:00\",\r\n  \"notes\": \"Control general\"\r\n}",
+          "raw": "{\r\n  \"patientId\": {{patientId}},\r\n  \"doctorId\": 2,\r\n  \"appointmentTime\": \"{{appointmentTime}}\",\r\n  \"notes\": \"Control general\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -222,6 +275,30 @@
     {
       "key": "json_web_token_14s2",
       "secret": true
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "phone",
+      "value": ""
+    },
+    {
+      "key": "patientId",
+      "value": ""
+    },
+    {
+      "key": "appointmentTime",
+      "value": ""
+    },
+    {
+      "key": "appointmentId",
+      "value": ""
     }
   ]
 }
