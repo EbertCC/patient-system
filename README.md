@@ -150,10 +150,10 @@ flowchart TB
     style DО fill:#E1F5EE,stroke:#0F6E56
 ```
 
-> La interfaz del repositorio vive en **Domain** (puro, sin Spring/JPA) y su implementación
-> en **Infrastructure**. Por eso el dominio se prueba con dobles en memoria, sin base de datos.
+
 
 ### Diagrama de paquetes
+
 
 ```mermaid
 flowchart TD
@@ -221,8 +221,7 @@ src/main/java/com/example/patient_system
 >   <version>2.5.0</version>
 > </dependency>
 > ```
-> y permitir en `SecurityConfig` las rutas `"/swagger-ui/**"` y `"/v3/api-docs/**"`.
-> La UI queda en `http://localhost:8085/swagger-ui.html` y la spec en `/v3/api-docs`.
+
 
 Todas las rutas (excepto registro y login) requieren cabecera
 `Authorization: Bearer <token>`.
@@ -273,75 +272,231 @@ servicio de dominio `SchedulingPolicy`. Un intento de doble reserva devuelve **4
 
 ## 7. Pipeline CI/CD
 
-Etapas de integración y entrega continua. _[Marca con ✔ lo implementado y con ⏳ lo planeado
-según lo que tu equipo haya configurado.]_
+
 
 | Etapa | Herramienta | Estado |
 |---|---|---|
-| Construcción automática | Maven (`mvn clean package`) | ✔ |
-| Análisis estático | SonarQube (Community 9.9) + SonarScanner | ✔ |
-| Pruebas unitarias | JUnit 5 (+ JaCoCo cobertura) | ✔ |
-| Pruebas funcionales | Postman / Newman (endpoints REST) | ✔ |
-| Pruebas de seguridad | OWASP Dependency-Check / ZAP | ✔ |
-| Pruebas de performance | Apache JMeter / Gatling | ✔ |
+| Construcción automática | Maven `mvn clean compile` | ✔ |
+| Análisis estático | SonarQube + Maven Sonar Plugin | ✔ |
+| Pruebas unitarias | JUnit 5 + JaCoCo | ✔ |
+| Pruebas funcionales | Postman / Newman | ✔ |
+| Pruebas de seguridad | OWASP ZAP | ✔ |
+| Pruebas de performance | Apache JMeter | ✔ |
 | Gestión de issues | GitHub Issues + GitHub Projects | ✔ |
 
-### Detalle por etapa
+---
 
-**Construcción automática.** `mvn clean package` compila los 4 módulos y genera un JAR
-autoejecutable con Tomcat embebido.
+## 7.1 Construcción automática
 
-y esto
+En esta etapa Jenkins compila el proyecto `patient-system` usando Maven.  
+El objetivo es verificar que el código fuente no tenga errores de compilación antes de ejecutar las demás validaciones.
 
-**Análisis estático.** SonarQube inspecciona code smells, bugs y vulnerabilities. En el
-laboratorio previo se corrigieron: código comentado muerto, literales duplicados en la
-configuración de seguridad, y bugs de validación (teléfono y dosis negativos), que en el
-rediseño quedaron encapsulados en value objects autovalidados.
+**Herramienta utilizada:** Maven
 
-**Pruebas unitarias (TDD).** Cada módulo tiene pruebas de dominio y de servicio con dobles
-en memoria (sin Spring ni BD): `DosageTest`, `TimeSlotTest`, `AppointmentTest`,
-`SchedulingPolicyTest`, `EmailTest`, `PhoneNumberTest`, `PatientRegistrationServiceTest`, etc.
+**Comando local:**
 
-**Pruebas funcionales.** Flujo completo verificado con Postman contra los endpoints REST:
-registro → login (token JWT) → operaciones de cada módulo, incluyendo casos de error
-(401 credenciales inválidas, 403 sin token, 409 conflicto de cita).
-
-**Pruebas de seguridad / performance.** _[Describir aquí lo que el equipo haya realizado
-o planee: análisis de dependencias vulnerables, pruebas de carga sobre los endpoints, etc.]_
-
-**Gestión de issues.** Las tareas de migración se gestionaron como GitHub Issues, agrupadas
-por módulo, con etiquetas `redesign` / `enhancement`, y los commits se enlazaron con `Fix #n`.
-
-Ejemplo de workflow (GitHub Actions) — `.github/workflows/ci.yml`:
-
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - name: Construir y probar
-        run: mvn clean verify
-      # - name: Análisis SonarQube
-      #   run: mvn sonar:sonar -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_TOKEN
+```bat
+mvn -B clean compile
 ```
+
+**Comando en Jenkinsfile:**
+
+```groovy
+bat 'mvn -B clean compile'
+```
+
+**Resultado esperado:**  
+El proyecto compila correctamente y Jenkins muestra `BUILD SUCCESS`.
+
+---
+
+## 7.2 Pruebas unitarias
+
+En esta etapa Jenkins ejecuta las pruebas unitarias con JUnit 5.  
+Estas pruebas validan la lógica interna de los módulos del sistema, como `Medication`, `Scheduling`, `Patient` y `Shared`.
+
+**Herramientas utilizadas:** JUnit 5 y JaCoCo
+
+**Comando local:**
+
+```bat
+mvn -B test
+```
+
+**Comando en Jenkinsfile:**
+
+```groovy
+bat 'mvn -B test'
+junit 'target/surefire-reports/*.xml'
+```
+
+**Resultado esperado:**  
+Las pruebas terminan sin fallos. En la ejecución del pipeline se obtuvo:
+
+```text
+Tests run: 47, Failures: 0, Errors: 0, Skipped: 0
+```
+![Dashboard](assets/2.png)
+
+---
+
+## 7.3 Análisis estático
+
+En esta etapa Jenkins ejecuta SonarQube para analizar la calidad del código.  
+Esta revisión permite identificar bugs, vulnerabilidades, code smells, duplicación y cobertura.
+
+Antes de ejecutar esta etapa, SonarQube debe estar activo en:
+
+```text
+http://localhost:9000
+```
+
+**Herramientas utilizadas:** SonarQube y Maven Sonar Plugin
+
+**Comando para activar SonarQube localmente:**
+
+```bat
+C:\sonarqube\bin\windows-x86-64\StartSonar.bat
+```
+
+**Comando local de análisis:**
+
+```bat
+mvn -B sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=******
+```
+
+**Comando en Jenkinsfile:**
+
+```groovy
+bat "mvn -B sonar:sonar -Dsonar.host.url=${SONAR_HOST} -Dsonar.token=******"
+```
+
+![Dashboard](assets/1.png)
+
+---
+
+## 7.4 Pruebas funcionales
+
+En esta etapa Jenkins ejecuta una colección de Postman mediante Newman.  
+Se valida que los endpoints REST funcionen correctamente.
+
+**Flujo probado:**
+
+```text
+Registro de paciente
+Login con JWT
+Registro de medicamento
+Registro de cita médica
+```
+
+**Herramientas utilizadas:** Postman y Newman
+
+**Archivo utilizado:**
+
+```text
+postman/patient-system.postman_collection.json
+```
+
+
+**Comando en Jenkinsfile:**
+
+```groovy
+newman.cmd run "postman/patient-system.postman_collection.json"
+```
+
+**Resultado esperado:**  
+Newman ejecuta todos los requests y assertions sin errores.  
+En la ejecución del pipeline se obtuvo `failed: 0`.
+
+![Dashboard](assets/3.png)
+![Dashboard](assets/4.png)
+
+---
+
+## 7.5 Pruebas de performance
+
+En esta etapa Jenkins ejecuta una prueba de rendimiento con Apache JMeter.  
+El objetivo es medir tiempos de respuesta, cantidad de peticiones, promedio, máximo, mínimo y porcentaje de errores.
+
+**Herramienta utilizada:** Apache JMeter
+
+**Archivo utilizado:**
+
+```text
+jmeter/patient-system-performance.jmx
+```
+
+
+
+**Comando en Jenkinsfile:**
+
+```groovy
+"C:\\apache-jmeter-5.6.3\\bin\\jmeter.bat" -n -t "jmeter\\patient-system-performance.jmx" -l "target\\jmeter\\results.jtl" -e -o "target\\jmeter\\report"
+```
+
+**Resultado esperado:**  
+JMeter genera un archivo de resultados y un reporte HTML en:
+
+```text
+target/jmeter/report
+```
+
+En la ejecución del pipeline se obtuvo:
+
+```text
+Err: 0 (0.00%)
+```
+![Dashboard](assets/5.png)
+
+---
+
+## 7.6 Pruebas de seguridad
+
+En esta etapa Jenkins ejecuta un escaneo básico de seguridad con OWASP ZAP.  
+El objetivo es analizar la API en busca de posibles vulnerabilidades comunes.
+
+**Herramienta utilizada:** OWASP ZAP
+
+**URL analizada:**
+
+```text
+http://localhost:8085/api/doctors
+```
+
+**Comando en Jenkinsfile:**
+
+```groovy
+pushd "C:\\Program Files\\ZAP\\Zed Attack Proxy"
+
+call zap.bat -cmd -quickurl http://localhost:8085/api/doctors -quickout "%WORKSPACE%\\target\\zap\\zap-report.html" -quickprogress
+
+popd
+```
+
+**Resultado esperado:**  
+OWASP ZAP ejecuta el escaneo y genera el reporte:
+
+```text
+target/zap/zap-report.html
+```
+![Dashboard](assets/6.png)
+
+---
+
 
 ### Mapa de Issues → Módulos
 
 | Issues | Entregable |
 |---|---|
-| #1 | Estructura modular de paquetes (esqueleto) |
-| #2 | Value Object `PatientId` en `shared/` |
-| #3–#6 | Módulo **Medication** (DDD + API REST) |
-| #7–#11 | Módulo **Scheduling** (DDD + API REST) |
-| #12–#15 | Separación **Identity / Patient** + corrección de fuga de password |
-| #16–#18 | Presentación: controllers REST por módulo, JWT y desacople |
+| #19 | Estructura modular de paquetes (esqueleto) |
+| #20 | Value Object `PatientId` en `shared/` |
+| #25 | Módulo **Medication** (DDD + API REST) |
+| #26 | Módulo **Scheduling** (DDD + API REST) |
+| #27 | Separación **Identity / Patient** + corrección de fuga de password |
+| #28 | Presentación: controllers REST por módulo, JWT y desacople |
+| #29 | Añadir archivo Postman, pruebas funcionales |
+| #30 | Añadir archivo Jmeter, pruebas de performance |
+| #31 | Implemntar pruebas de serguridad OWASP ZAP archivo Jenkinsfile|
 
 ---
 
