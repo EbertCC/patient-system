@@ -61,10 +61,9 @@ pipeline {
             steps {
                 echo '== d. Pruebas funcionales con Newman =='
                 bat 'dir postman'
-                bat 'newman.cmd run "postman/patient-system.postman_collection.json"'
+                bat '"C:\\Users\\ebert\\AppData\\Roaming\\npm\\newman.cmd" run "postman/patient-system.postman_collection.json"'
             }
         }
-
         // e. PRUEBAS DE PERFORMANCE -----------------------------------
         stage('Performance Tests') {
             steps {
