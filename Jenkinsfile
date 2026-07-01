@@ -60,8 +60,14 @@ pipeline {
         stage('Functional Tests') {
             steps {
                 echo '== d. Pruebas funcionales con Newman =='
-                bat 'dir postman'
-                bat '"C:\\Users\\ebert\\AppData\\Roaming\\npm\\newman.cmd" run "postman/patient-system.postman_collection.json"'
+
+                bat '''
+                set PATH=C:\\Program Files\\nodejs;C:\\Users\\ebert\\AppData\\Roaming\\npm;%PATH%
+                where node
+                node -v
+                where newman.cmd
+                newman.cmd run "postman/patient-system.postman_collection.json"
+                '''
             }
         }
         // e. PRUEBAS DE PERFORMANCE -----------------------------------
