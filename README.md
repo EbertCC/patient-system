@@ -21,13 +21,11 @@ API REST y autenticación JWT.
 
 ## 1. Equipo de trabajo
 
-**Equipo:** _[NOMBRE DEL EQUIPO]_
+| Integrante |
+|---|
+| Esteban Andres Medina Chino |
+| Ebert Luis Condori Casquino |
 
-| Integrante | Rol | Usuario GitHub |
-|---|---|---|
-| _[Nombre 1]_ | _[rol]_ | _[usuario]_ |
-| _[Nombre 2]_ | _[rol]_ | _[usuario]_ |
-| _[Nombre 3]_ | _[rol]_ | _[usuario]_ |
 
 **Curso:** Ingeniería de Software — Universidad Católica San Pablo (UCSP)
 
@@ -65,10 +63,6 @@ flowchart LR
     P --> VM[Ver mis medicamentos]
     P --> EM[Eliminar medicamento]
 ```
-
-> _[Opcional: reemplazar o complementar con el Diagrama de Casos de Uso UML formal
-> exportado de tu herramienta (StarUML, draw.io, PlantUML) como imagen.]_
-
 ---
 
 ## 4. Modelo de Dominio
