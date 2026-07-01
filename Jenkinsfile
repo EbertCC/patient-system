@@ -86,24 +86,29 @@ pipeline {
                 '''
             }
         }
-        // f. PRUEBAS DE SEGURIDAD -------------------------------------
+     
+        // f. PRUEBAS DE SEGURIDAD --------------------------------------
         stage('Security Tests') {
             steps {
                 echo '== f. Pruebas de seguridad con OWASP ZAP =='
 
                 bat '''
-                if not exist target\\zap mkdir target\\zap
+                if not exist "%WORKSPACE%\\target\\zap" mkdir "%WORKSPACE%\\target\\zap"
 
-                if exist target\\zap\\zap-report.html del /f /q target\\zap\\zap-report.html
+                if exist "%WORKSPACE%\\target\\zap\\zap-report.html" del /f /q "%WORKSPACE%\\target\\zap\\zap-report.html"
 
-                "C:\\Program Files\\ZAP\\Zed Attack Proxy\\zap.bat" -cmd -quickurl http://localhost:8085/api/doctors -quickout "target\\zap\\zap-report.html" -quickprogress
+                pushd "C:\\Program Files\\ZAP\\Zed Attack Proxy"
 
-                dir target\\zap
+                call zap.bat -cmd -quickurl http://localhost:8085/api/doctors -quickout "%WORKSPACE%\\target\\zap\\zap-report.html" -quickprogress
+
+                popd
+
+                dir "%WORKSPACE%\\target\\zap"
 
                 exit /b 0
                 '''
             }
-        }        
+        }             
 
         // g. GESTIÓN DE ISSUES ----------------------------------------
         stage('Issue Management') {
