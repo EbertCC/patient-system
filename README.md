@@ -15,8 +15,7 @@ API REST y autenticación JWT.
 5. [Visión General de Arquitectura (DDD + Paquetes)](#5-visión-general-de-arquitectura)
 6. [Módulos y Servicios REST](#6-módulos-y-servicios-rest)
 7. [Pipeline CI/CD](#7-pipeline-cicd)
-8. [Cómo ejecutar](#8-cómo-ejecutar)
-
+8. [Desarrollo del pipeline CI/CD](#8-desarrollo-del-pipeline-cicd)
 ---
 
 ## 1. Equipo de trabajo
@@ -274,15 +273,15 @@ servicio de dominio `SchedulingPolicy`. Un intento de doble reserva devuelve **4
 
 
 
-| Etapa | Herramienta | Estado |
-|---|---|---|
-| Construcción automática | Maven `mvn clean compile` | ✔ |
-| Análisis estático | SonarQube + Maven Sonar Plugin | ✔ |
-| Pruebas unitarias | JUnit 5 + JaCoCo | ✔ |
-| Pruebas funcionales | Postman / Newman | ✔ |
-| Pruebas de seguridad | OWASP ZAP | ✔ |
-| Pruebas de performance | Apache JMeter | ✔ |
-| Gestión de issues | GitHub Issues + GitHub Projects | ✔ |
+| Etapa | Herramienta | 
+|---|---|
+| Construcción automática | Maven `mvn clean compile` | 
+| Análisis estático | SonarQube + Maven Sonar Plugin | 
+| Pruebas unitarias | JUnit 5 + JaCoCo | 
+| Pruebas funcionales | Postman / Newman | 
+| Pruebas de seguridad | OWASP ZAP | 
+| Pruebas de performance | Apache JMeter | 
+| Gestión de issues | GitHub Issues + GitHub Projects | 
 
 ---
 
@@ -488,6 +487,7 @@ target/zap/zap-report.html
 
 | Issues | Entregable |
 |---|---|
+| #11-#14 | Refactoring general (Bugs de validación, eliminación de código comentado). |
 | #19 | Estructura modular de paquetes (esqueleto) |
 | #20 | Value Object `PatientId` en `shared/` |
 | #25 | Módulo **Medication** (DDD + API REST) |
@@ -500,23 +500,25 @@ target/zap/zap-report.html
 
 ---
 
-## 8. Cómo ejecutar
-
+## 8. Desarrollo del pipeline CI/CD
 **Requisitos:** Java 21, Maven, MySQL (XAMPP).
 
-1. Arrancar MySQL en XAMPP.
-2. Configurar `src/main/resources/application.properties` (base de datos y `jwt.secret`).
-3. Ejecutar:
-   ```bash
-   mvn spring-boot:run
-   ```
-4. La API queda en `http://localhost:8085`.
+Para automatizar la validación del proyecto `patient-system`, se desarrolló un pipeline CI/CD usando Jenkins.  
+Este pipeline se conecta al repositorio de GitHub y ejecuta automáticamente las principales etapas de control de calidad del sistema.
 
-**Primer uso:**
-```bash
-# Registrar
-POST /api/patients/register  { "email":"...", "password":"...", "name":"...", "phone":"...", "medicalHistory":"..." }
-# Login (devuelve token)
-POST /api/auth/login  { "email":"...", "password":"..." }
-# Usar el token en las demás rutas: Authorization: Bearer <token>
-```
+El pipeline fue definido en el archivo `Jenkinsfile`, ubicado en la raíz del proyecto.  
+En este archivo se configuraron las herramientas necesarias para compilar, probar y analizar el sistema, como Maven, JDK 21, SonarQube, Newman, JMeter y OWASP ZAP.
+
+El desarrollo del pipeline se realizó de forma progresiva, agregando una etapa por cada necesidad del proyecto:
+
+1. Construcción automática con Maven.
+2. Ejecución de pruebas unitarias con JUnit 5.
+3. Análisis estático con SonarQube.
+4. Pruebas funcionales con Postman y Newman.
+5. Pruebas de performance con Apache JMeter.
+6. Pruebas de seguridad con OWASP ZAP.
+
+La finalidad de este pipeline es asegurar que cada cambio realizado en el proyecto pueda ser validado automáticamente antes de ser integrado a la rama principal de desarrollo.  
+De esta manera, se reduce el riesgo de errores, se mejora la calidad del código y se evidencia el cumplimiento de buenas prácticas de integración continua.
+
+![Dashboard](assets/7.png)

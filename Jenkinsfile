@@ -28,7 +28,6 @@ pipeline {
             steps {
                 echo '== a. Construcción automática con Maven =='
                 bat 'mvn -B clean compile'
-                // En Linux/Mac usar:  sh 'mvn -B clean compile'
             }
         }
 
@@ -110,23 +109,15 @@ pipeline {
             }
         }             
 
-        // g. GESTIÓN DE ISSUES ----------------------------------------
-        stage('Issue Management') {
-            steps {
-                echo '== g. Gestión de issues con GitHub Issues =='
-                // Los issues se gestionan en GitHub. Los commits enlazan
-                // con "Fix #n" para cerrarlos automáticamente al hacer merge.
-                echo 'Issues gestionados en GitHub Issues + GitHub Projects.'
-            }
-        }
+      
     }
 
     post {
         success {
-            echo '✅ Pipeline completado correctamente.'
+            echo 'Pipeline completado correctamente.'
         }
         failure {
-            echo '❌ El pipeline falló. Revisar la etapa marcada en rojo.'
+            echo 'El pipeline falló. Revisar la etapa marcada en rojo.'
         }
         always {
             echo 'Fin del pipeline patient-system.'
